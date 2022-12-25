@@ -23,8 +23,8 @@ public class Process {
 		ProcessState = State.Create;
 	}
 	
-	void Run(int sysTime)
-	{		
+	void Create(int sysTime)
+	{
 		if(ProcessState == State.Create)
 		{
 			// proses başladı
@@ -32,9 +32,15 @@ public class Process {
 																									PID,
 																									Priority,
 																									BrustTime);
-			ProcessState = State.Run;
+			ProcessState = State.Ready;
 		}
-		else if(BrustTime == 1)
+		
+	}
+	
+	void Run(int sysTime)
+	{		
+		ProcessState = State.Run;
+		if(BrustTime == 0)
 		{
 			// proses sonlandı 
 			System.out.printf("%d sn proses sonlandı.          (id:%d öncelik:%d kalan süre:%d sn)\r\n", sysTime, 
@@ -52,5 +58,17 @@ public class Process {
 					 																					BrustTime);
 		}
 		BrustTime--;
+		// proses start
+	}
+	
+	void Stop(int sysTime)
+	{
+		System.out.printf("%d sn proses askıya alındı.          (id:%d öncelik:%d kalan süre:%d sn)\r\n", 	sysTime, 
+																											PID,
+																											Priority,
+																											BrustTime);
+		ProcessState = Process.State.Ready;
+		// prosesi stop
+		
 	}
 }

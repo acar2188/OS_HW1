@@ -1,12 +1,27 @@
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+
+import Process.State;
+
 import java.lang.Thread;
 
 public class main {
+	
+	 public enum QueueType {
+	     None,
+	     FCFS,
+	     RQ0,
+	     RQ1,
+	     RQ2;
+	 };
+	 
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		
+		QueueType ActiveQueue = QueueType.None;
+		
 		List<Process> JobDispatchList = new LinkedList<Process>();
 		Queue<Process> Queue_FCFS = new LinkedList<Process>();
 		Queue<Process> Queue_RQ0 = new LinkedList<Process>();
@@ -23,6 +38,8 @@ public class main {
 		JobDispatchList.add(new Process(5, 0 , 6, 5));		
 		
 		int tick = 0;
+		Process runProcess;
+		
 		for(;;)
 		{
 			if(!JobDispatchList.isEmpty())
@@ -35,6 +52,7 @@ public class main {
 						//System.out.printf("%d PID Run ArriveTime:%d tick=%d\n", JobDispatchList.get(i).PID, arriveTime, tick);
 						
 						Process process = JobDispatchList.get(i);						
+						process.Create(tick);
 						
 						// Proses ilgili kuyruğa eklenir.
 						switch(process.Priority)
@@ -68,7 +86,28 @@ public class main {
 			// FCFS Yüksek öncelikli bir proses varsa
 			if(!Queue_FCFS.isEmpty())
 			{
-				Process runProcess = Queue_FCFS.peek();				
+				switch(ActiveQueue)
+				{
+					case RQ0: 
+					{
+						if(!Queue_RQ0.isEmpty() && Queue_RQ0.peek().ProcessState == Process.State.Run)
+						{
+							// durdurmamız lazım
+							runProcess.Stop(tick);
+							Queue_RQ1.add( Queue_RQ0.poll());	
+						}						
+						
+					} break;
+					case RQ1: 
+						Queue_RQ1.add(process);
+							break;
+					case RQ2: 
+						Queue_RQ2.add(process);
+							break;
+				}
+					
+					
+				runProcess = Queue_FCFS.peek();				
 				
 				// Proses Start edilir.				
 				runProcess.Run(tick);		
@@ -78,6 +117,32 @@ public class main {
 				{				
 					Queue_FCFS.remove();			
 				}
+			}
+			else if(!Queue_RQ0.isEmpty())
+			{
+				runProcess = Queue_RQ0.peek();	
+				// Çalışan varsa durdur ardından yürüt
+				if(runProcess.ProcessState == Process.State.Run)
+				{
+					runProcess.Stop(tick);
+					Queue_RQ1.add( Queue_RQ0.poll());
+					if(!Queue_RQ0.isEmpty())
+					{
+						runProcess = Queue_RQ0.peek();
+						runProcess.Run(tick);
+					}
+				}
+				// ready ise yürüy
+				else if(runProcess.ProcessState == Process.State.Ready)
+				{
+					// Proses Start edilir.				
+					runProcess.Run(tick);
+				}
+				ActiveQueue = QueueType.RQ0;
+			}
+			else
+			{
+				ActiveQueue = QueueType.None;
 			}
 				
 			try
