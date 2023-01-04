@@ -246,25 +246,61 @@ public class main {
 			}
 			else if(!Queue_RQ1.isEmpty())
 			{
+				//RQ2 eğer run ise stop edilir.				
+				if(ActiveQueue == QueueType.RQ2)
+				{						
+					// Queue boş değilse
+					if(!Queue_RQ2.isEmpty())
+					{
+						// Queue'nun ilk prosesi run durumundaysa
+						runProcess = Queue_RQ2.peek();
+						if(runProcess.ProcessState == Process_SW.State.Run)
+						{
+							// Bu proses durdurulur
+							runProcess.Stop(tick);
+							// Proses sonlandıysa
+							if(runProcess.ProcessState == Process_SW.State.Terminated)
+							{
+								// Prosesi listeden sil.
+								Queue_RQ2.poll();
+							}
+							else // Proses bitmediyse
+							{
+								// Durdurulan proses RQ2 kuyruğunun başından çıkarılarak sonuna aktarılır.
+								Queue_RQ2.add( Queue_RQ2.poll());
+							}	
+						}
+					}
+				}
+				
 				runProcess = Queue_RQ1.peek();	
 				// Çalışan varsa durdur ardından yürüt
-				if(runProcess.ProcessState == Process.State.Run)
+				if(runProcess.ProcessState == Process_SW.State.Run)
 				{					
 					// Bu proses durdurulur
 					runProcess.Stop(tick);
-					// Öncelik düşürülür								
-					runProcess.Priority++;
-					// Durdurulan proses RQ2 kuyruğuna aktarılır.					
-					Queue_RQ2.add(Queue_RQ1.poll());
-					
-					if(!Queue_RQ1.isEmpty())
+					// Proses sonlandıysa
+					if(runProcess.ProcessState == Process_SW.State.Terminated)
 					{
-						runProcess = Queue_RQ1.peek();
-						runProcess.Run(tick);
+						// Prosesi listeden sil.
+						Queue_RQ1.poll();
+					}
+					else // Proses bitmediyse
+					{
+						// Öncelik düşürülür								
+						runProcess.Priority++;
+						// Durdurulan proses RQ2 kuyruğuna aktarılır.					
+						Queue_RQ2.add(Queue_RQ1.poll());
+						
+						if(!Queue_RQ1.isEmpty())
+						{
+							runProcess = Queue_RQ1.peek();
+							runProcess.Run(tick);
+						}
 					}
 				}
 				// ready ise yürüy
-				else if(runProcess.ProcessState == Process.State.Ready)
+				else if(runProcess.ProcessState == Process_SW.State.Ready)
 				{
 					// Proses Start edilir.				
 					runProcess.Run(tick);
