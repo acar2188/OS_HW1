@@ -190,54 +190,135 @@ public class main {
 						{
 							// Queue'nun ilk prosesi run durumundaysa
 							runProcess = Queue_RQ2.peek();
-							if(runProcess.ProcessState == Process.State.Run)
+							if(runProcess.ProcessState == Process_SW.State.Run)
 							{
 								// Bu proses durdurulur
 								runProcess.Stop(tick);
-								// Durdurulan proses RQ2 kuyruğunun başından çıkarılarak sonuna aktarılır.
-								Queue_RQ2.add( Queue_RQ2.poll());								
+								// Proses sonlandıysa
+								if(runProcess.ProcessState == Process_SW.State.Terminated)
+								{
+									// Prosesi listeden sil.
+									Queue_RQ2.poll();
+								}
+								else // Proses bitmediyse
+								{
+									// Durdurulan proses RQ2 kuyruğunun başından çıkarılarak sonuna aktarılır.
+									Queue_RQ2.add( Queue_RQ2.poll());
+								}	
 							}
 						}
 					} break;						
 							
 					default:break;
 				}
-					
-					
-				runProcess = Queue_FCFS.peek();				
+				
+				runProcess = Queue_FCFS.peek();
+				if(runProcess.BrustTime <= 0)
+				{
+					runProcess.Stop(tick); // durdurmanın ardından sonlanır.
+					Queue_FCFS.remove();
+					if(!Queue_FCFS.isEmpty())
+						runProcess = Queue_FCFS.peek();
+					else
+						continue;
+				}				
 				
 				// Proses Start edilir.				
 				runProcess.Run(tick);
-				
-				// Proses bittiyse listeden çıkarılır.
-				if(runProcess.ProcessState == Process.State.Terminated)
-				{				
-					Queue_FCFS.remove();
-					// Proses bitigi icin algoritma tekrar calistirilir.
-					continue;
-				}
+				ActiveQueue = QueueType.FCFS;			
 			}
 			else if(!Queue_RQ0.isEmpty())
 			{
+				//RQ1 ve RQ2 eğer run ise stop edilir.
+				switch(ActiveQueue)
+				{	
+					case RQ1: 
+					{
+						// Queue boş değilse
+						if(!Queue_RQ1.isEmpty())
+						{
+							// Queue'nun ilk prosesi run durumundaysa
+							runProcess = Queue_RQ1.peek();
+							if(runProcess.ProcessState == Process_SW.State.Run)
+							{
+								// Bu proses durdurulur
+								runProcess.Stop(tick);
+								// Proses sonlandıysa
+								if(runProcess.ProcessState == Process_SW.State.Terminated)
+								{
+									// Prosesi listeden sil.
+									Queue_RQ1.poll();
+								}
+								else // Proses bitmediyse
+								{									
+									// Öncelik düşürülür								
+									runProcess.Priority++;
+									// Durdurulan proses RQ2 kuyruğuna aktarılır.
+									Queue_RQ2.add(Queue_RQ1.poll());										
+								}
+															
+							}						
+						}
+						
+					} break;
+					
+					case RQ2: 
+					{						
+						// Queue boş değilse
+						if(!Queue_RQ2.isEmpty())
+						{
+							// Queue'nun ilk prosesi run durumundaysa
+							runProcess = Queue_RQ2.peek();
+							if(runProcess.ProcessState == Process_SW.State.Run)
+							{
+								// Bu proses durdurulur
+								runProcess.Stop(tick);
+								// Proses sonlandıysa
+								if(runProcess.ProcessState == Process_SW.State.Terminated)
+								{
+									// Prosesi listeden sil.
+									Queue_RQ2.poll();
+								}
+								else // Proses bitmediyse
+								{
+									// Durdurulan proses RQ2 kuyruğunun başından çıkarılarak sonuna aktarılır.
+									Queue_RQ2.add( Queue_RQ2.poll());
+								}	
+							}
+						}
+					} break;						
+							
+					default:break;
+				}
+				
 				runProcess = Queue_RQ0.peek();	
 				// Çalışan varsa durdur ardından yürüt
-				if(runProcess.ProcessState == Process.State.Run)
+				if(runProcess.ProcessState == Process_SW.State.Run)
 				{					
 					// Bu proses durdurulur
 					runProcess.Stop(tick);
-					// Öncelik düşürülür								
-					runProcess.Priority++;
-					// Durdurulan proses RQ1 kuyruğuna aktarılır.					
-					Queue_RQ1.add(Queue_RQ0.poll());
-					
-					if(!Queue_RQ0.isEmpty())
+					// Proses sonlandıysa
+					if(runProcess.ProcessState == Process_SW.State.Terminated)
 					{
-						runProcess = Queue_RQ0.peek();
-						runProcess.Run(tick);
+						// Prosesi listeden sil.
+						Queue_RQ0.poll();
 					}
+					else // Proses bitmediyse
+					{
+						// Öncelik düşürülür								
+						runProcess.Priority++;
+						// Durdurulan proses RQ1 kuyruğuna aktarılır.					
+						Queue_RQ1.add(Queue_RQ0.poll());
+						
+						if(!Queue_RQ0.isEmpty())
+						{
+							runProcess = Queue_RQ0.peek();
+							runProcess.Run(tick);						
+						}						
+					}				
 				}
 				// ready ise yürüy
-				else if(runProcess.ProcessState == Process.State.Ready)
+				else if(runProcess.ProcessState == Process_SW.State.Ready)
 				{
 					// Proses Start edilir.				
 					runProcess.Run(tick);
@@ -311,21 +392,30 @@ public class main {
 			{
 				runProcess = Queue_RQ2.peek();	
 				// Çalışan varsa durdur ardından yürüt
-				if(runProcess.ProcessState == Process.State.Run)
+				if(runProcess.ProcessState == Process_SW.State.Run)
 				{					
 					// Bu proses durdurulur
 					runProcess.Stop(tick);
-					// Durdurulan proses RQ2 kuyruğunun başından çıkarılarak sonuna aktarılır.				
-					Queue_RQ2.add(Queue_RQ2.poll());
-					
-					if(!Queue_RQ2.isEmpty())
+					// Proses sonlandıysa
+					if(runProcess.ProcessState == Process_SW.State.Terminated)
 					{
-						runProcess = Queue_RQ2.peek();
-						runProcess.Run(tick);
+						// Prosesi listeden sil.
+						Queue_RQ2.poll();
 					}
+					else // Proses bitmediyse
+					{
+						// Durdurulan proses RQ2 kuyruğunun başından çıkarılarak sonuna aktarılır.				
+						Queue_RQ2.add(Queue_RQ2.poll());
+						
+						if(!Queue_RQ2.isEmpty())
+						{
+							runProcess = Queue_RQ2.peek();
+							runProcess.Run(tick);
+						}
+					}					
 				}
 				// ready ise yürüy
-				else if(runProcess.ProcessState == Process.State.Ready)
+				else if(runProcess.ProcessState == Process_SW.State.Ready)
 				{
 					// Proses Start edilir.				
 					runProcess.Run(tick);
@@ -345,7 +435,7 @@ public class main {
 		           
 	            // catching the exception
 	            System.out.println(e);
-	        }		
+	        }
 			tick++;
 		}
 	}
