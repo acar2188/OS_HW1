@@ -429,7 +429,7 @@ public class main {
 				
 			try
 			{
-				Thread.sleep((long)1);
+				Thread.sleep((long)1000);
 			}
 			catch (Exception e) {
 		           
