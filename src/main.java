@@ -1,6 +1,11 @@
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+//import java.io.FileReader;
 import java.lang.Thread;
 
 public class main {
@@ -23,10 +28,27 @@ public class main {
 		Queue<Process> Queue_FCFS = new LinkedList<Process>();
 		Queue<Process> Queue_RQ0 = new LinkedList<Process>();
 		Queue<Process> Queue_RQ1 = new LinkedList<Process>();
-		Queue<Process> Queue_RQ2 = new LinkedList<Process>();
-		
+		Queue<Process> Queue_RQ2 = new LinkedList<Process>();		
 			
-		// TODO: DOSYADAN OKUNACAK
+		try 
+		{
+		      File myObj = new File("giris.txt");
+		      Scanner myReader = new Scanner(myObj);
+		      while (myReader.hasNextLine()) {
+		        String data = myReader.nextLine();
+		        //System.out.println(data);
+		        String[] processData =  data.split(",", 3);
+		        int arriveTime = Integer.parseInt(processData[0].replaceAll(" ",""));
+		        int priority = Integer.parseInt(processData[1].replaceAll(" ",""));
+		        int brustTime = Integer.parseInt(processData[2].replaceAll(" ",""));
+		        JobDispatchList.add(new Process_SW(pidCounter++, priority , arriveTime, brustTime));
+		      }
+		      myReader.close();
+		} 
+		catch (FileNotFoundException e) {
+		      System.out.println("An error occurred.");
+		      e.printStackTrace();
+		}
 		
 		JobDispatchList.add(new Process(1, 0 , 0, 10));
 		JobDispatchList.add(new Process(2, 0 , 5, 6));
