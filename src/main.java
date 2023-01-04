@@ -17,19 +17,22 @@ public class main {
 	     RQ1,
 	     RQ2;
 	 };
+	 	 
 	 
-
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		
+		int pidCounter = 0;
 		QueueType ActiveQueue = QueueType.None;
 		
-		List<Process> JobDispatchList = new LinkedList<Process>();
-		Queue<Process> Queue_FCFS = new LinkedList<Process>();
-		Queue<Process> Queue_RQ0 = new LinkedList<Process>();
-		Queue<Process> Queue_RQ1 = new LinkedList<Process>();
-		Queue<Process> Queue_RQ2 = new LinkedList<Process>();		
-			
+		List<Process_SW> JobDispatchList = new LinkedList<Process_SW>();
+		Queue<Process_SW> Queue_FCFS = new LinkedList<Process_SW>();
+		Queue<Process_SW> Queue_RQ0 = new LinkedList<Process_SW>();
+		Queue<Process_SW> Queue_RQ1 = new LinkedList<Process_SW>();
+		Queue<Process_SW> Queue_RQ2 = new LinkedList<Process_SW>();
+		
+		
+		// TODO: DOSYADAN OKUNACAK
+		
 		try 
 		{
 		      File myObj = new File("giris.txt");
@@ -50,48 +53,52 @@ public class main {
 		      e.printStackTrace();
 		}
 		
-		JobDispatchList.add(new Process(1, 0 , 0, 10));
-		JobDispatchList.add(new Process(2, 0 , 5, 6));
-		JobDispatchList.add(new Process(3, 0 , 2, 8));
-		JobDispatchList.add(new Process(4, 0 , 18, 12));
-		JobDispatchList.add(new Process(5, 0 , 6, 5));		
 		
 		int tick = 0;
-		Process idleProcess = new Process(999, 4 , 0, 0xFFFFFFFF);
-		Process runProcess = idleProcess;// new Process(999, 4 , 0, 0xFFFFFFFF);
+		Process_SW idleProcess = new Process_SW(999, 4 , 0, 0xFFFFFFFF);
+		Process_SW runProcess = idleProcess;// new Process(999, 4 , 0, 0xFFFFFFFF);
 		
 		for(;;)
 		{
 			if(!JobDispatchList.isEmpty())
 			{
-				for(int i =0 ; i<JobDispatchList.size(); i++ )
+				boolean add = false;
+				do
 				{
-					int arriveTime = JobDispatchList.get(i).ArriveTime;
-					if(arriveTime >= tick)
+					add = false;
+					for(int i =0 ; i<JobDispatchList.size(); i++ )
 					{
-						//System.out.printf("%d PID Run ArriveTime:%d tick=%d\n", JobDispatchList.get(i).PID, arriveTime, tick);
-						
-						Process process = JobDispatchList.get(i);						
-						process.Create(tick);
-						
-						// Proses ilgili kuyruğa eklenir.
-						switch(process.Priority)
+						int arriveTime = JobDispatchList.get(i).ArriveTime;
+						if(arriveTime <= tick)
 						{
-							case 0: Queue_FCFS.add(process);
-									break;
-							case 1: Queue_RQ0.add(process);
-									break;
-							case 2: Queue_RQ1.add(process);
-									break;
-							case 3: Queue_RQ2.add(process);
-									break;
+							//System.out.printf("%d PID Run ArriveTime:%d tick=%d\n", JobDispatchList.get(i).PID, arriveTime, tick);
+							
+							Process_SW process = JobDispatchList.get(i);						
+							process.Create(tick);
+							
+							// Proses ilgili kuyruğa eklenir.
+							switch(process.Priority)
+							{
+								case 0: Queue_FCFS.add(process);
+										break;
+								case 1: Queue_RQ0.add(process);
+										break;
+								case 2: Queue_RQ1.add(process);
+										break;
+								case 3: Queue_RQ2.add(process);
+										break;
+							}
+							
+							// Başlatılacak görev listesinden kaldırır.
+							JobDispatchList.remove(i);
+							add = true;
+							break;
 						}
-						
-						// Başlatılacak görev listesinden kaldırır.
-						JobDispatchList.remove(i);
-						break;
-					}
-				}
+					}					
+					
+				} while(add);
+				
+				
 			}
 			else if(Queue_FCFS.isEmpty() &&
 					Queue_RQ0.isEmpty() && 
@@ -100,29 +107,47 @@ public class main {
 			{
 				
 				System.out.printf("Program Sonlandi.");
+				try {
+					System.in.read();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				break;
 			}
 			
 			// FCFS Yüksek öncelikli bir proses varsa
 			if(!Queue_FCFS.isEmpty())
-			{
+			{				
+				// Eğer FCFS öncesi RQ0,RQ1 ve RQ2'den run durumunda olan proses varsa stop edilir.
 				switch(ActiveQueue)
 				{
-					case RQ0: 
+					case RQ0:
 					{
 						// Queue boş değilse
 						if(!Queue_RQ0.isEmpty())
 						{
 							// Queue'nun ilk prosesi run durumundaysa
 							runProcess = Queue_RQ0.peek();
-							if(runProcess.ProcessState == Process.State.Run)
+							if(runProcess.ProcessState == Process_SW.State.Run)
 							{
 								// Bu proses durdurulur
 								runProcess.Stop(tick);
-								// Öncelik düşürülür								
-								runProcess.Priority++;
-								// Durdurulan proses RQ1 kuyruğuna aktarılır.
-								Queue_RQ1.add( Queue_RQ0.poll());								
+								// Proses sonlandıysa
+								if(runProcess.ProcessState == Process_SW.State.Terminated)
+								{
+									// Prosesi listeden sil.
+									Queue_RQ0.poll();
+								}
+								else // Proses bitmediyse
+								{									
+									// Öncelik düşürülür
+									runProcess.Priority++;
+									// Durdurulan proses RQ1 kuyruğuna aktarılır.
+									Queue_RQ1.add( Queue_RQ0.poll());
+								}
+								
+													
 							}						
 						}
 						
@@ -135,14 +160,24 @@ public class main {
 						{
 							// Queue'nun ilk prosesi run durumundaysa
 							runProcess = Queue_RQ1.peek();
-							if(runProcess.ProcessState == Process.State.Run)
+							if(runProcess.ProcessState == Process_SW.State.Run)
 							{
 								// Bu proses durdurulur
 								runProcess.Stop(tick);
-								// Öncelik düşürülür								
-								runProcess.Priority++;
-								// Durdurulan proses RQ2 kuyruğuna aktarılır.
-								Queue_RQ2.add( Queue_RQ1.poll());								
+								// Proses sonlandıysa
+								if(runProcess.ProcessState == Process_SW.State.Terminated)
+								{
+									// Prosesi listeden sil.
+									Queue_RQ1.poll();
+								}
+								else // Proses bitmediyse
+								{									
+									// Öncelik düşürülür								
+									runProcess.Priority++;
+									// Durdurulan proses RQ2 kuyruğuna aktarılır.
+									Queue_RQ2.add(Queue_RQ1.poll());										
+								}
+															
 							}						
 						}
 						
