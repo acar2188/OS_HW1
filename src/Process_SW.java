@@ -59,7 +59,7 @@ public class Process_SW {
 		
 		if(FirstRun)
 		{
-			System.out.printf("\u001B[38;5;%dm %d sn proses başladı.              (id:%d öncelik:%d kalan süre:%d sn)\r\n" + ANSI_RESET, 
+			System.out.printf("\u001B[38;5;%dm %d sn proses basladi.              (id:%d oncelik:%d kalan sure:%d sn)\r\n" + ANSI_RESET, 
 																									PID*8+30,
 																									sysTime, 
 																									PID,
@@ -68,15 +68,9 @@ public class Process_SW {
 			FirstRun = false;
 			try
 			{
-				
-				//PB.environment().put("Var", "Proceess OK");
+				//Proses olarak notepad.exe ayarlanır ve cikis.txt dosyasını acması ayarlanır.
 				PB.command("notepad.exe","cikis.txt");
-				HW_PB = PB.start();				
-				int acar1=1;
-				acar1++;
-				
-				//System.out.printf("PID: %d  \r\n", HW_PB.pid());
-				//HW_PB.destroy();
+				HW_PB = PB.start();
 			}
 			catch (Exception e) {
 		           
@@ -88,7 +82,7 @@ public class Process_SW {
 		else
 		{
 			// proses yürütülüyor
-			System.out.printf("\u001B[38;5;%dm %d sn proses yürütülüyor.          (id:%d öncelik:%d kalan süre:%d sn)\r\n" + ANSI_RESET, 
+			System.out.printf("\u001B[38;5;%dm %d sn proses yurutuluyor.          (id:%d oncelik:%d kalan sure:%d sn)\r\n" + ANSI_RESET, 
 																											PID*8+30,
 																											sysTime, 
 							 																				PID,
@@ -111,7 +105,7 @@ public class Process_SW {
 		if(BrustTime == 0)
 		{
 			// proses sonlandı 
-			System.out.printf("\u001B[38;5;%dm %d sn proses sonlandı.             (id:%d öncelik:%d kalan süre:%d sn)\r\n"  + ANSI_RESET, 
+			System.out.printf("\u001B[38;5;%dm %d sn proses sonlandi.             (id:%d oncelik:%d kalan sure:%d sn)\r\n"  + ANSI_RESET, 
 																											PID*8+30, 	
 																											sysTime, 
 																									     	PID,
@@ -124,7 +118,7 @@ public class Process_SW {
 		}
 		else
 		{
-			System.out.printf("\u001B[38;5;%dm %d sn proses askıya alındı.        (id:%d öncelik:%d kalan süre:%d sn)\r\n" + ANSI_RESET, 
+			System.out.printf("\u001B[38;5;%dm %d sn proses askiya alindi.        (id:%d oncelik:%d kalan sure:%d sn)\r\n" + ANSI_RESET, 
 																												PID*8+30, 	
 																												sysTime, 
 																												PID,
@@ -136,7 +130,7 @@ public class Process_SW {
 				//HW_PB.wait();
 				
 				synchronized(HW_PB){
-					HW_PB.wait(1);
+					HW_PB.wait(1000);
 				}
 					
 			}

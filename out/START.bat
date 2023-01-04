@@ -1,0 +1,1 @@
+java -jar "os_hw1.jar"
